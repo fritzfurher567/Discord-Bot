@@ -1,6 +1,6 @@
 """
 cogs/leveling.py
-XP and leveling system (MEE6/VibeBot style):
+XP and leveling system:
 - Members earn XP for chatting, with a per-user cooldown to prevent spam
 - /rank shows a member's level, XP, and progress to next level
 - /leaderboard shows the top members by XP
