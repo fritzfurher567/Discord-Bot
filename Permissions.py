@@ -1,6 +1,6 @@
 """
 cogs/permissions.py
-Role-based command permissions (Multex-style granular access control):
+Role-based command permissions:
 - The server owner and anyone with Administrator can always use every command.
 - Admins can restrict any other command to specific roles with /permission-restrict.
 - A command with no restrictions configured stays open to everyone (subject to
