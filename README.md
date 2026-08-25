@@ -27,31 +27,27 @@ This guide covers every single command, setting, and feature in the bot. Copy-pa
 
 ## Initial Setup
 
-### 1. Install & Run
+### 1. Setting Up Discord Developer Portal
+
+1. Go to https://discord.com/developers/applications and create a new application
+2. After making it in the overview tab go to **Bot** and scroll down to **Presence Intent, Server Members Intent, and Message Content Intent** and make sure all of them are on
+3. Scroll down abit on Bot and select Admin
+4. Then Scroll Up To **Token** and click reset token, remember to **Save** that token
+
+---
+
+### 2. Install & Run
 
 ```bash
 # Install Python 3.8+, then:
 pip install -r requirements.txt
 
-# Create .env file (copy from .env.example)
-cp .env.example .env
-
 # Add your bot token to .env
-# DISCORD_TOKEN=your_token_here
+# DISCORD_TOKEN = YOUR_TOKEN_ID
 
 # Run the bot
 python main.py
 ```
-
-### 2. Enable Intents in Discord Developer Portal
-
-1. Go to https://discord.com/developers/applications
-2. Click your bot application
-3. Go to **Bot** → scroll down to **Privileged Gateway Intents**
-4. Turn ON:
-   - ✅ Server Members Intent
-   - ✅ Message Content Intent
-5. Click Save
 
 ### 3. Get Invite Link
 
@@ -61,6 +57,14 @@ python main.py
 4. Copy the generated URL and paste in your browser to invite the bot
 
 For More Help Go To The Setup.md For More In Depth Explaining For Setup.
+
+---
+
+### EXTRA NOTE
+
+You Will Need Something To Keep The Bot Running 24/7 I Recommend Using [PythonAnywhere](https://www.pythonanywhere.com) or you could use a free option [KataBump](katabump.com) to host your bot
+
+---
 
 ### 4. First Run
 
