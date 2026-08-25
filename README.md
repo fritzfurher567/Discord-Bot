@@ -1037,4 +1037,6 @@ Copyright (c) 2026 Fritz
 
 ---
 
-**Questions or issues?** Check the codebase or ask in your Discord server!
+**Questions or issues?** Check the codebase or ask in our Discord server!
+
+https://discord.gg/MxETdBJAHd
