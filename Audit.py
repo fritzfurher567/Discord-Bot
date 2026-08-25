@@ -1,6 +1,6 @@
 """
 cogs/audit.py
-Audit log commands (Multex-style "every command is audited"). The actual
+Audit log commands ("every command is audited"). The actual
 logging happens globally in main.py's RestrictedCommandTree, since that's
 where every single command already passes through for permission checks —
 this cog just exposes commands to configure and view that log.
