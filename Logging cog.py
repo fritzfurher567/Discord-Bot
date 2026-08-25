@@ -1,6 +1,6 @@
 """
 cogs/logging.py
-General server activity logging (Dyno/Carl-bot style):
+General server activity logging:
 Message edits/deletes, and channel create/delete events, sent to a
 configurable server-log channel. Separate from the moderation-action log.
 """
