@@ -1,6 +1,6 @@
 """
 cogs/discharge.py
-Discharge system + desertion detection + background checks (Multex-style):
+Discharge system + desertion detection + background checks:
 - /discharge removes a member's rank/division roles (and optionally kicks them),
   with a logged reason
 - Desertion detection: if a ranked/divisioned member leaves the server on
