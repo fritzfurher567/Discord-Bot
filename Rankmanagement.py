@@ -1,6 +1,6 @@
 """
 cogs/rankmanagement.py
-Rank hierarchy and divisions (Multex-style ranking/transfer system, adapted
+Rank hierarchy and divisions (ranking/transfer system, adapted
 to work purely with Discord roles rather than the Roblox group API, so it
 works for any server — not just ones with a linked Roblox group).
 
