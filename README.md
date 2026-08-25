@@ -358,10 +358,10 @@ Separate from moderation logs — this logs general activity: message edits, del
 ```
 
 **What gets logged:**
-- ✅ Message deleted (full text + author + channel)
-- ✅ Message edited (before & after text)
-- ✅ Channel created
-- ✅ Channel deleted
+-  Message deleted (full text + author + channel)
+-  Message edited (before & after text)
+-  Channel created
+-  Channel deleted
 
 ---
 
@@ -541,7 +541,7 @@ See top 10 members by XP.
 ```
 
 **Shows:**
-- 🥇 🥈 🥉 medals for top 3
+- medals for top 3
 - Name + Level + Total XP
 
 ### Set Level-Up Announcement Channel
@@ -598,7 +598,7 @@ Link an emoji on an existing message to a role.
 
 ```
 /reactionrole-add 987654321 🎮 @Gamer
-/reactionrole-add 987654321 🎨 @Artist
+/reactionrole-add 987654321 🎮 @Artist
 ```
 
 Now when someone reacts to that message with 🎮, they get @Gamer. When they remove the reaction, the role is removed.
@@ -876,7 +876,7 @@ Opens a form where you fill in:
 ```
 
 Then fill in the form:
-- Title: `🎉 New Feature!`
+- Title: `New Feature!`
 - Description: `We just added /remind commands!`
 - Color: `57F287` (green)
 - Footer: `Announced today`
