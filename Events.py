@@ -1,6 +1,6 @@
 """
 cogs/events.py
-Events system (Multex-style): schedule group activities and track who's
+Events system: schedule group activities and track who's
 coming via RSVP buttons (Attending / Maybe / Declined) attached to the
 event announcement.
 """
