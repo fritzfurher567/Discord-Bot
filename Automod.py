@@ -1,6 +1,6 @@
 """
 cogs/automod.py
-Auto-moderation (Carl-bot/Dyno style):
+Auto-moderation:
 - Banned word filter
 - Invite link filter
 - Excessive caps filter
