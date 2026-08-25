@@ -60,7 +60,7 @@ python main.py
 3. Under **Permissions**, check: `Administrator` (or pick specific ones)
 4. Copy the generated URL and paste in your browser to invite the bot
 
-For More Help Go To The Setup README For More In Depth Explaining For Setup.
+For More Help Go To The Setup.md For More In Depth Explaining For Setup.
 
 ### 4. First Run
 
