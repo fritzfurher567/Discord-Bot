@@ -1020,17 +1020,6 @@ All data (XP, economy, warnings, tickets, etc.) is stored in `bot_data.db` — a
 
 ---
 
-## Tips & Best Practices
-
-1. **Set up mod-log first** — then all moderation actions are recorded
-2. **Use reaction roles for opt-ins** — let members pick roles themselves
-3. **Custom commands save time** — for rules, FAQs, links you repeat
-4. **Level roles encourage chat** — make levels exciting with role rewards
-5. **Economy is more fun with a shop** — let members spend their coins on roles or items
-6. **Welcome messages make servers friendly** — new members feel wanted
-
----
-
 ## Credit & License
 
 **Made by Fritz**
