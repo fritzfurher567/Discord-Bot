@@ -29,7 +29,12 @@ async def init_db():
                 ticket_log_channel INTEGER,
                 ticket_panel_channel INTEGER,
                 server_log_channel INTEGER,
-                levelup_channel INTEGER
+                levelup_channel INTEGER,
+                verified_role_id INTEGER,
+                awards_channel INTEGER,
+                loa_channel INTEGER,
+                discharge_channel INTEGER,
+                audit_log_channel INTEGER
             )
         """)
 
@@ -162,6 +167,125 @@ async def init_db():
                 twitch_username TEXT NOT NULL,
                 is_live INTEGER DEFAULT 0,
                 UNIQUE(guild_id, twitch_username)
+            )
+        """)
+
+        # ---- Command permissions (role restrictions) ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS command_permissions (
+                guild_id INTEGER NOT NULL,
+                command_name TEXT NOT NULL,
+                role_id INTEGER NOT NULL,
+                PRIMARY KEY (guild_id, command_name, role_id)
+            )
+        """)
+
+        # ---- Roblox verification ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS roblox_verifications (
+                guild_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                roblox_id INTEGER NOT NULL,
+                roblox_username TEXT NOT NULL,
+                verified_at TEXT NOT NULL,
+                PRIMARY KEY (guild_id, user_id)
+            )
+        """)
+
+        # ---- Awards ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS awards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                awarded_by INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                reason TEXT,
+                timestamp TEXT NOT NULL
+            )
+        """)
+
+        # ---- Leave of Absence ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS loa_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                reason TEXT,
+                status TEXT DEFAULT 'pending',
+                reviewed_by INTEGER,
+                requested_at TEXT NOT NULL
+            )
+        """)
+
+        # ---- Rank hierarchy ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS ranks (
+                guild_id INTEGER NOT NULL,
+                rank_name TEXT NOT NULL,
+                role_id INTEGER NOT NULL,
+                rank_order INTEGER NOT NULL,
+                PRIMARY KEY (guild_id, rank_name)
+            )
+        """)
+
+        # ---- Divisions (for transfers) ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS divisions (
+                guild_id INTEGER NOT NULL,
+                division_name TEXT NOT NULL,
+                role_id INTEGER NOT NULL,
+                PRIMARY KEY (guild_id, division_name)
+            )
+        """)
+
+        # ---- Discharges (includes desertions) ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS discharges (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                discharged_by INTEGER,
+                reason TEXT,
+                is_desertion INTEGER DEFAULT 0,
+                timestamp TEXT NOT NULL
+            )
+        """)
+
+        # ---- Events ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT,
+                host_id INTEGER NOT NULL,
+                event_time TEXT,
+                channel_id INTEGER,
+                message_id INTEGER,
+                status TEXT DEFAULT 'scheduled',
+                created_at TEXT NOT NULL
+            )
+        """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS event_rsvps (
+                event_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                PRIMARY KEY (event_id, user_id)
+            )
+        """)
+
+        # ---- Audit log ----
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                command_name TEXT NOT NULL,
+                timestamp TEXT NOT NULL
             )
         """)
 
@@ -602,3 +726,310 @@ async def remove_twitch_alert(guild_id: int, twitch_username: str) -> bool:
         )
         await db.commit()
         return cursor.rowcount > 0
+
+
+# ==================== COMMAND PERMISSIONS (ROLE RESTRICTIONS) ====================
+
+async def add_command_restriction(guild_id: int, command_name: str, role_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO command_permissions (guild_id, command_name, role_id) VALUES (?, ?, ?)",
+            (guild_id, command_name.lower(), role_id)
+        )
+        await db.commit()
+
+
+async def remove_command_restriction(guild_id: int, command_name: str, role_id: int) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "DELETE FROM command_permissions WHERE guild_id = ? AND command_name = ? AND role_id = ?",
+            (guild_id, command_name.lower(), role_id)
+        )
+        await db.commit()
+        return cursor.rowcount > 0
+
+
+async def clear_command_restrictions(guild_id: int, command_name: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "DELETE FROM command_permissions WHERE guild_id = ? AND command_name = ?", (guild_id, command_name.lower())
+        )
+        await db.commit()
+
+
+async def get_command_restrictions(guild_id: int, command_name: str) -> list:
+    """Return the list of role IDs allowed to use this command. Empty list = no restriction configured."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT role_id FROM command_permissions WHERE guild_id = ? AND command_name = ?",
+            (guild_id, command_name.lower())
+        )
+        rows = await cursor.fetchall()
+        return [r[0] for r in rows]
+
+
+async def get_all_command_restrictions(guild_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM command_permissions WHERE guild_id = ? ORDER BY command_name ASC", (guild_id,)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+# ==================== ROBLOX VERIFICATION ====================
+
+async def add_roblox_verification(guild_id: int, user_id: int, roblox_id: int, roblox_username: str, verified_at: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO roblox_verifications (guild_id, user_id, roblox_id, roblox_username, verified_at) "
+            "VALUES (?, ?, ?, ?, ?) ON CONFLICT(guild_id, user_id) DO UPDATE SET "
+            "roblox_id = excluded.roblox_id, roblox_username = excluded.roblox_username, verified_at = excluded.verified_at",
+            (guild_id, user_id, roblox_id, roblox_username, verified_at)
+        )
+        await db.commit()
+
+
+async def get_roblox_verification(guild_id: int, user_id: int) -> dict | None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM roblox_verifications WHERE guild_id = ? AND user_id = ?", (guild_id, user_id)
+        )
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def remove_roblox_verification(guild_id: int, user_id: int) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "DELETE FROM roblox_verifications WHERE guild_id = ? AND user_id = ?", (guild_id, user_id)
+        )
+        await db.commit()
+        return cursor.rowcount > 0
+
+
+# ==================== AWARDS ====================
+
+async def add_award(guild_id: int, user_id: int, awarded_by: int, title: str, reason: str, timestamp: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "INSERT INTO awards (guild_id, user_id, awarded_by, title, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+            (guild_id, user_id, awarded_by, title, reason, timestamp)
+        )
+        await db.commit()
+        return cursor.lastrowid
+
+
+async def get_awards(guild_id: int, user_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM awards WHERE guild_id = ? AND user_id = ? ORDER BY id DESC", (guild_id, user_id)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+# ==================== LEAVE OF ABSENCE ====================
+
+async def add_loa_request(guild_id: int, user_id: int, start_date: str, end_date: str, reason: str, requested_at: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "INSERT INTO loa_requests (guild_id, user_id, start_date, end_date, reason, requested_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (guild_id, user_id, start_date, end_date, reason, requested_at)
+        )
+        await db.commit()
+        return cursor.lastrowid
+
+
+async def set_loa_status(loa_id: int, status: str, reviewed_by: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "UPDATE loa_requests SET status = ?, reviewed_by = ? WHERE id = ?", (status, reviewed_by, loa_id)
+        )
+        await db.commit()
+
+
+async def get_loa_request(loa_id: int) -> dict | None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM loa_requests WHERE id = ?", (loa_id,))
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def get_active_loas(guild_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM loa_requests WHERE guild_id = ? AND status = 'approved' ORDER BY start_date ASC", (guild_id,)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+# ==================== RANK HIERARCHY ====================
+
+async def add_rank(guild_id: int, rank_name: str, role_id: int, rank_order: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO ranks (guild_id, rank_name, role_id, rank_order) VALUES (?, ?, ?, ?) "
+            "ON CONFLICT(guild_id, rank_name) DO UPDATE SET role_id = excluded.role_id, rank_order = excluded.rank_order",
+            (guild_id, rank_name, role_id, rank_order)
+        )
+        await db.commit()
+
+
+async def get_ranks(guild_id: int) -> list:
+    """Return all configured ranks ordered from lowest to highest."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM ranks WHERE guild_id = ? ORDER BY rank_order ASC", (guild_id,))
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+async def remove_rank(guild_id: int, rank_name: str) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("DELETE FROM ranks WHERE guild_id = ? AND rank_name = ?", (guild_id, rank_name))
+        await db.commit()
+        return cursor.rowcount > 0
+
+
+# ==================== DIVISIONS ====================
+
+async def add_division(guild_id: int, division_name: str, role_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO divisions (guild_id, division_name, role_id) VALUES (?, ?, ?) "
+            "ON CONFLICT(guild_id, division_name) DO UPDATE SET role_id = excluded.role_id",
+            (guild_id, division_name, role_id)
+        )
+        await db.commit()
+
+
+async def get_divisions(guild_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM divisions WHERE guild_id = ? ORDER BY division_name ASC", (guild_id,))
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+async def remove_division(guild_id: int, division_name: str) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute("DELETE FROM divisions WHERE guild_id = ? AND division_name = ?", (guild_id, division_name))
+        await db.commit()
+        return cursor.rowcount > 0
+
+
+# ==================== DISCHARGES / DESERTIONS ====================
+
+async def add_discharge(guild_id: int, user_id: int, discharged_by: int | None, reason: str, is_desertion: bool, timestamp: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "INSERT INTO discharges (guild_id, user_id, discharged_by, reason, is_desertion, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+            (guild_id, user_id, discharged_by, reason, int(is_desertion), timestamp)
+        )
+        await db.commit()
+        return cursor.lastrowid
+
+
+async def get_discharges(guild_id: int, user_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM discharges WHERE guild_id = ? AND user_id = ? ORDER BY id DESC", (guild_id, user_id)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+async def get_recent_desertions(guild_id: int, limit: int = 10) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM discharges WHERE guild_id = ? AND is_desertion = 1 ORDER BY id DESC LIMIT ?",
+            (guild_id, limit)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+# ==================== EVENTS ====================
+
+async def create_event(guild_id: int, name: str, description: str, host_id: int, event_time: str, channel_id: int, created_at: str) -> int:
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "INSERT INTO events (guild_id, name, description, host_id, event_time, channel_id, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (guild_id, name, description, host_id, event_time, channel_id, created_at)
+        )
+        await db.commit()
+        return cursor.lastrowid
+
+
+async def set_event_message(event_id: int, message_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("UPDATE events SET message_id = ? WHERE id = ?", (message_id, event_id))
+        await db.commit()
+
+
+async def get_event(event_id: int) -> dict | None:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM events WHERE id = ?", (event_id,))
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+
+async def get_upcoming_events(guild_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM events WHERE guild_id = ? AND status = 'scheduled' ORDER BY id DESC", (guild_id,)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+async def set_rsvp(event_id: int, user_id: int, status: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO event_rsvps (event_id, user_id, status) VALUES (?, ?, ?) "
+            "ON CONFLICT(event_id, user_id) DO UPDATE SET status = excluded.status",
+            (event_id, user_id, status)
+        )
+        await db.commit()
+
+
+async def get_rsvps(event_id: int) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute("SELECT * FROM event_rsvps WHERE event_id = ?", (event_id,))
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+
+
+# ==================== AUDIT LOG ====================
+
+async def add_audit_entry(guild_id: int, user_id: int, command_name: str, timestamp: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO audit_log (guild_id, user_id, command_name, timestamp) VALUES (?, ?, ?, ?)",
+            (guild_id, user_id, command_name, timestamp)
+        )
+        await db.commit()
+
+
+async def get_recent_audit_entries(guild_id: int, limit: int = 15) -> list:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT * FROM audit_log WHERE guild_id = ? ORDER BY id DESC LIMIT ?", (guild_id, limit)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
