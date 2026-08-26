@@ -1,8 +1,8 @@
-# Complete Discord Bot Guide — Every Feature Explained
+# Complete Discord Bot Guide
 
-**Made by Fritz**
+Made by Fritz
 
-This guide covers every single command, setting, and feature in the bot. Copy-paste examples are included for each one.
+This guide walks you through every single command in the bot. All examples are copy-paste ready.
 
 ---
 
@@ -20,134 +20,108 @@ This guide covers every single command, setting, and feature in the bot. Copy-pa
 10. [Reminders](#reminders)
 11. [Economy & Shop](#economy--shop)
 12. [Social Alerts](#social-alerts)
-13. [Embeds & Messages](#embeds--messages)
-14. [Utility & Info](#utility--info)
+13. [Permissions](#permissions)
+14. [Roblox Verification](#roblox-verification)
+15. [Awards & Leave of Absence](#awards--leave-of-absence)
+16. [Rank Hierarchy & Divisions](#rank-hierarchy--divisions)
+17. [Discharge & Desertions](#discharge--desertions)
+18. [Background Checks](#background-checks)
+19. [Events](#events)
+20. [Audit Log](#audit-log)
+21. [Embeds & Messages](#embeds--messages)
+22. [Utility & Info](#utility--info)
 
 ---
 
 ## Initial Setup
 
-### 1. Setting Up Discord Developer Portal
+### 1. Setup in Discord Developer Portal
 
-1. Go to https://discord.com/developers/applications and create a new application
-2. After making it in the overview tab go to **Bot** and scroll down to **Presence Intent, Server Members Intent, and Message Content Intent** and make sure all of them are on
-3. Scroll down abit on Bot and select Admin
-4. Then Scroll Up To **Token** and click reset token, remember to **Save** that token
+Go to https://discord.com/developers/applications and create a new application. Under the Bot section, make sure these intents are enabled:
+- Server Members Intent
+- Message Content Intent
+- Presence Intent
 
----
+Copy your bot token and save it somewhere safe.
 
 ### 2. Install & Run
 
 ```bash
-# Install Python 3.8+, then:
 pip install -r requirements.txt
+cp .env.example .env
+```
 
-# Add your bot token to .env
-# DISCORD_TOKEN = YOUR_TOKEN_ID
+Then edit `.env` and add your bot token:
+```
+DISCORD_TOKEN=your_token_here
+```
 
-# Run the bot
+Run the bot:
+```bash
 python main.py
 ```
 
-### 3. Get Invite Link
+### 3. Get Your Invite Link
 
-1. Go to **OAuth2** → **URL Generator**
-2. Under **Scopes**, check: `bot` + `applications.commands`
-3. Under **Permissions**, check: `Administrator` (or pick specific ones)
-4. Copy the generated URL and paste in your browser to invite the bot
-
-For More Help Go To The Setup.md For More In Depth Explaining For Setup.
-
----
-
-### EXTRA NOTE
-
-You Will Need Something To Keep The Bot Running 24/7 I Recommend Using [PythonAnywhere](https://www.pythonanywhere.com) or you could use a free option [KataBump](katabump.com) to host your bot
-
----
+Go to OAuth2 > URL Generator. Check `bot` and `applications.commands` under Scopes. Check `Administrator` under Permissions. Copy the URL and open it in your browser to invite the bot.
 
 ### 4. First Run
 
-When the bot starts, slash commands sync automatically. Depending on your intents, it may take up to an hour to appear globally the first time (usually 5-10 minutes). If they don't appear in your server, try:
+Commands sync automatically when the bot starts. Usually they appear in 5-10 minutes but can take up to an hour the first time. Try `/help` to verify everything worked.
 
-```
-/help
-```
+### Hosting 24/7
 
-If that works, all commands are synced.
+You'll need a hosting service to keep the bot running. Options include PythonAnywhere (pythonanywhere.com) for a paid option or Replit (replit.com) for free hosting.
 
 ---
 
 ## Moderation
 
-All moderation commands log to the configured mod-log channel (if set). Only users with the corresponding Discord permission can use these commands.
+All moderation actions get logged to your mod-log channel if you've set one. Only users with the required Discord permission can use these commands.
 
 ### Set Up Mod Log Channel
-
-**Command:** `/setmodlog #channel`
-
-This is where all moderation actions get recorded. Do this first.
 
 ```
 /setmodlog #mod-logs
 ```
 
+Do this first. Everything gets recorded here.
+
 ### Kick a Member
-
-**Command:** `/kick @user [reason]`
-
-Removes a member from the server.
 
 ```
 /kick @BadUser Spamming in chat
 ```
 
-**What happens:**
-- User is kicked
-- Reason is logged to mod-log
-- User gets a DM (if they accept DMs from the bot)
+Removes them from the server. They get a DM if their DMs are open.
 
 ### Ban a Member
 
-**Command:** `/ban @user [reason] [delete_days]`
-
-Bans a member and optionally deletes their recent messages.
-
 ```
-/ban @Hacker Hacking attempt delete_days:7
+/ban @Hacker Attempting to hack
+/ban @Hacker Attempting to hack delete_days:7
 ```
 
-- `delete_days`: 0–7 (how many days of messages to delete, default 0)
+The `delete_days` option (0-7) removes their recent messages. Defaults to 0.
 
 ### Unban a User
 
-**Command:** `/unban <user_id> [reason]`
-
-Unban someone by their user ID (not name). To get a user ID:
-- In Discord, right-click their profile → Copy User ID
-
 ```
-/unban 123456789 False alarm, they're good
+/unban 123456789 They're good now
 ```
+
+You need their user ID. Right-click their profile and choose "Copy User ID".
 
 ### Timeout (Mute) a Member
 
-**Command:** `/timeout @user <duration> [reason]`
-
-Silences someone temporarily. They can't send messages, add reactions, or connect to voice.
-
-**Duration format:** `10m`, `2h`, `1d`, `1w` (max 28 days)
-
 ```
 /timeout @Spammer 10m Stop advertising
-/timeout @BadUser 1d Harassing members
+/timeout @User1 1d Be respectful
 ```
 
+Duration format: `10m`, `2h`, `1d`, `1w`. Max is 28 days. They can't send messages or connect to voice.
+
 ### Remove Timeout
-
-**Command:** `/untimeout @user`
-
-Let someone talk again.
 
 ```
 /untimeout @Spammer
@@ -155,35 +129,21 @@ Let someone talk again.
 
 ### Warn a Member
 
-**Command:** `/warn @user <reason>`
-
-Records a warning against someone. Warnings are persistent and can be reviewed later.
-
 ```
-/warn @User1 First warning - be respectful
+/warn @User1 First warning, read the rules
 ```
+
+Records a warning that stacks up.
 
 ### View Warnings
-
-**Command:** `/warnings @user`
-
-See all warnings for a specific member.
 
 ```
 /warnings @User1
 ```
 
-**Output shows:**
-- Warning ID (used to remove individual warnings)
-- Reason
-- When it was issued
-- Who issued it
+Shows all warnings with IDs, reasons, dates, and who issued them.
 
 ### Clear All Warnings
-
-**Command:** `/clearwarnings @user`
-
-Remove all warnings for a member.
 
 ```
 /clearwarnings @User1
@@ -191,98 +151,68 @@ Remove all warnings for a member.
 
 ### Remove a Single Warning
 
-**Command:** `/removewarning <warning_id>`
-
-Remove one specific warning. Get the ID from `/warnings`.
-
 ```
 /removewarning 5
 ```
 
-### Purge (Bulk Delete) Messages
+Get the ID from `/warnings`.
 
-**Command:** `/purge <amount> [@member]`
-
-Delete up to 100 recent messages. Optionally filter by a specific member.
+### Delete Messages (Purge)
 
 ```
-/purge 50                    # Delete 50 most recent messages
-/purge 25 @Spammer           # Delete 25 recent messages from @Spammer
+/purge 50
+/purge 25 @Spammer
 ```
+
+Delete up to 100 recent messages. You can filter by a member.
 
 ### Lock a Channel
-
-**Command:** `/lock`
-
-Prevents @everyone from sending messages in the current channel.
 
 ```
 /lock
 ```
 
-**Use cases:**
-- Cool down a heated debate
-- Prevent spoilers during a server event
-- Temporarily pause discussion
+Prevents @everyone from sending messages. Use this to cool down a heated debate or pause discussion during an event.
 
 ### Unlock a Channel
-
-**Command:** `/unlock`
-
-Re-enable @everyone to send messages.
 
 ```
 /unlock
 ```
 
-### Lockdown (Lock All Channels)
-
-**Command:** `/lockdown`
-
-Lock every text channel in the server at once (emergency nuke).
+### Lock All Channels
 
 ```
 /lockdown
 ```
 
+Emergency button that locks every text channel at once.
+
 ### Set Slowmode
 
-**Command:** `/slowmode <seconds>`
-
-Force a delay between messages (0 to disable).
-
 ```
-/slowmode 5              # 5 seconds between each message
-/slowmode 0              # Disable slowmode
+/slowmode 5
+/slowmode 0
 ```
 
-### Change Nickname
+Force a delay between messages (seconds). 0 disables it.
 
-**Command:** `/nickname @user [new_nickname]`
-
-Change someone's server nickname (leave blank to reset to username).
+### Change Someone's Nickname
 
 ```
 /nickname @User1 Cool Guy
-/nickname @User1          # Reset to their username
+/nickname @User1
 ```
+
+Leave it blank to reset.
 
 ### Add a Role
 
-**Command:** `/addrole @user @role`
-
-Give someone a role.
-
 ```
 /addrole @User1 @VIP
-/addrole @User2 @Moderator
 ```
 
 ### Remove a Role
-
-**Command:** `/removerole @user @role`
-
-Take away a role.
 
 ```
 /removerole @User1 @VIP
@@ -292,13 +222,9 @@ Take away a role.
 
 ## Auto-Moderation
 
-Auto-mod runs automatically on every message. It filters, warns, and logs violations. **Moderators (anyone with Manage Messages) are always exempt.**
+Auto-mod runs on every message automatically. Moderators are always exempt.
 
 ### Set Banned Words
-
-**Command:** `/automod-bannedwords add <words>` | `remove <words>` | `list`
-
-Define words that get auto-deleted.
 
 ```
 /automod-bannedwords add spam, abuse, badword
@@ -306,192 +232,110 @@ Define words that get auto-deleted.
 /automod-bannedwords remove badword
 ```
 
-When someone posts a banned word:
-1. Message is deleted
-2. User is warned
-3. Violation logged to mod-log
+Banned words get deleted, the user gets warned, and it's logged.
 
 ### Toggle Invite Filter
 
-**Command:** `/automod-toggle feature:Invite\ link\ filter enabled:true`
-
-Auto-delete Discord invite links (blocks self-promotion).
-
 ```
-/automod-toggle feature:Invite\ link\ filter enabled:true    # Turn ON
-/automod-toggle feature:Invite\ link\ filter enabled:false   # Turn OFF
+/automod-toggle feature:Invite_link_filter enabled:true
+/automod-toggle feature:Invite_link_filter enabled:false
 ```
+
+Auto-delete Discord invite links.
 
 ### Toggle Caps Filter
 
-**Command:** `/automod-toggle feature:Excessive\ caps\ filter enabled:true`
-
-Auto-delete messages that are >70% UPPERCASE.
-
 ```
-/automod-toggle feature:Excessive\ caps\ filter enabled:true
+/automod-toggle feature:Excessive_caps_filter enabled:true
 ```
+
+Delete messages that are more than 70% uppercase.
 
 ### Set Mention Limit
 
-**Command:** `/automod-mentionlimit <limit>`
-
-Delete messages with more than X mentions (prevents mass-tagging).
-
 ```
-/automod-mentionlimit 5        # Max 5 mentions per message
-/automod-mentionlimit 0        # Disable (allow unlimited)
+/automod-mentionlimit 5
+/automod-mentionlimit 0
 ```
+
+Delete messages with more than X mentions. 0 disables it.
 
 ---
 
 ## Server Logging
 
-Separate from moderation logs — this logs general activity: message edits, deletes, and channel management.
+Separate from moderation logs. This logs general activity.
 
 ### Set Server Log Channel
-
-**Command:** `/setserverlog #channel`
 
 ```
 /setserverlog #logs
 ```
 
-**What gets logged:**
--  Message deleted (full text + author + channel)
--  Message edited (before & after text)
--  Channel created
--  Channel deleted
+Logs message edits, deletes, and channel creates/deletes.
 
 ---
 
 ## Tickets
 
-A full support ticket system with categories, priorities, and transcripts.
+Support ticket system where members create private channels.
 
 ### Initial Setup
-
-**Command:** `/ticket-setup <category> <log_channel>`
-
-Choose a category for new ticket channels, and a channel to log closed tickets.
 
 ```
 /ticket-setup #Tickets #ticket-logs
 ```
 
-Do this once per server.
+Choose a category for ticket channels and a log channel. Do this once.
 
 ### Post the Ticket Panel
-
-**Command:** `/ticket-panel`
-
-Post the "Create Ticket" button in the current channel (usually in #support or #tickets).
 
 ```
 /ticket-panel
 ```
 
-**What users see:**
-- A message with a blue "Create Ticket" button
-- Clicking it opens a dropdown to select category & priority
-
-### How Tickets Work (User Perspective)
-
-1. Click the "Create Ticket" button
-2. Select a category (General Support, Technical, Billing, Report a User, Other)
-3. Select a priority (Low, Medium, High, Urgent)
-4. A private channel is created: `ticket-username`
-5. Only the user and mods can see it
+Posts a button in the current channel. Members click to create a ticket, pick a category (General Support, Technical, Billing, Report a User, Other), and choose priority (Low, Medium, High, Urgent). A private channel gets created.
 
 ### Inside a Ticket Channel
 
-Users type their issue. Staff can:
-
-**Command:** `/ticket-add @user`
-
-Add someone to this ticket (can be another staff member or the user's friend).
-
 ```
 /ticket-add @Helper
-```
-
-**Command:** `/ticket-remove @user`
-
-Remove someone from this ticket.
-
-```
 /ticket-remove @Helper
-```
-
-**Command:** `/ticket-priority high`
-
-Change the ticket's priority.
-
-```
 /ticket-priority urgent
-```
-
-**Command:** `/ticket-close`
-
-Close the ticket. The bot:
-1. Saves a `.txt` transcript to the log channel
-2. Deletes the channel after 5 seconds
-
-```
 /ticket-close
 ```
 
-### Claim a Ticket
+Add or remove people, change priority, or close the ticket (saves a transcript and deletes the channel).
 
-Inside a ticket channel, click the "Claim" button (appears on the first message). This marks you as the handler so multiple staff don't respond at once.
+Click the Claim button on the first message to mark yourself as handling it.
 
 ---
 
 ## Welcome & Goodbye
 
-Announce new and leaving members.
-
-### Set Welcome Channel
-
-**Command:** `/welcome-setup #channel [message]`
-
-Post a welcome embed when someone joins.
+### Set Welcome Message
 
 ```
 /welcome-setup #welcome Welcome {user} to {server}! We now have {membercount} members.
 ```
 
-**Placeholders:**
-- `{user}` → @mention of the new member
-- `{username}` → their name
-- `{server}` → server name
-- `{membercount}` → current member count
+Placeholders: `{user}`, `{username}`, `{server}`, `{membercount}`
 
-### Set Goodbye Channel
-
-**Command:** `/goodbye-setup #channel [message]`
-
-Post when someone leaves.
+### Set Goodbye Message
 
 ```
 /goodbye-setup #goodbye {user} has left {server}. We now have {membercount} members.
 ```
 
-### Welcome DM
-
-**Command:** `/welcome-dm enabled:true [message]`
-
-Send a DM to new members (in addition to channel message).
+### Send Welcome DM
 
 ```
-/welcome-dm enabled:true Welcome to {server}! Read #rules and have fun!
+/welcome-dm enabled:true Welcome to {server}! Check out #rules.
 ```
 
-### Goodbye DM
+New members get a DM in addition to the channel message.
 
-**Command:** `/goodbye-dm enabled:true [message]`
-
-Send a DM to leaving members.
+### Send Goodbye DM
 
 ```
 /goodbye-dm enabled:true Sorry to see you leave {server}!
@@ -501,64 +345,34 @@ Send a DM to leaving members.
 
 ## Leveling & XP
 
-MEE6-style XP system. Members earn random XP for chatting (not commands).
+Members earn XP for chatting (not commands). 15-25 XP per message with a 60-second cooldown per person to prevent spam.
 
-### XP Rules
-
-- **Earn XP:** Send a message in any channel
-- **Cooldown:** XP only once every 60 seconds per user (prevents spam)
-- **Amount:** 15–25 XP per message
-- **Levels:** XP needed = `5 * (level^2) + 50 * level + 100`
-  - Level 1: 155 XP
-  - Level 5: 630 XP
-  - Level 10: 1,600 XP
-
-### View Your Rank
-
-**Command:** `/rank [@user]`
-
-See your (or someone else's) level and progress.
+### Check Your Rank
 
 ```
-/rank                  # Your rank
-/rank @User1           # Another member's rank
+/rank
+/rank @User1
 ```
 
-**Shows:**
-- Level
-- Total XP
-- Progress bar to next level
-- XP in current level / XP needed
+Shows level, total XP, and progress to next level.
 
-### Top Members (Leaderboard)
-
-**Command:** `/leaderboard`
-
-See top 10 members by XP.
+### See the Leaderboard
 
 ```
 /leaderboard
 ```
 
-**Shows:**
-- medals for top 3
-- Name + Level + Total XP
+Top 10 members by XP.
 
-### Set Level-Up Announcement Channel
-
-**Command:** `/levelup-channel #channel`
-
-When someone levels up, post an announcement there (or in the message channel by default).
+### Set Rank-Up Announcement Channel
 
 ```
 /levelup-channel #level-ups
 ```
 
-### Grant Role at Level
+Announcements post there when someone levels up.
 
-**Command:** `/setlevelrole level:5 role:@Regular`
-
-Auto-give a role when someone reaches a level.
+### Auto-Grant Role at a Level
 
 ```
 /setlevelrole level:5 role:@Member
@@ -566,13 +380,9 @@ Auto-give a role when someone reaches a level.
 /setlevelrole level:25 role:@VIP
 ```
 
-When a member levels up to 5, they automatically get @Member. Stacks with other roles.
+When they hit level 5, they automatically get the Member role.
 
-### Remove Level Role
-
-**Command:** `/removelevelrole level:5`
-
-Stop granting a role at that level.
+### Remove a Level Role
 
 ```
 /removelevelrole level:5
@@ -582,79 +392,45 @@ Stop granting a role at that level.
 
 ## Reaction Roles
 
-Carl-bot style: React with an emoji to get a role.
+React with an emoji to get a role.
 
-### Add a Reaction Role
-
-**Command:** `/reactionrole-add <message_id> <emoji> @role`
-
-Link an emoji on an existing message to a role.
-
-**To get message ID:**
-1. In Discord, right-click a message
-2. Click "Copy Message ID"
-
-**Example:**
+### Link Emoji to Role
 
 ```
-/reactionrole-add 987654321 🎮 @Gamer
-/reactionrole-add 987654321 🎮 @Artist
+/reactionrole-add 987654321 emoji:gear role:@Support
+/reactionrole-add 987654321 emoji:art role:@Artist
 ```
 
-Now when someone reacts to that message with 🎮, they get @Gamer. When they remove the reaction, the role is removed.
+Get the message ID by right-clicking a message and choosing "Copy Message ID". When someone reacts, they get the role. When they remove the reaction, they lose the role.
 
-### Remove a Reaction Role
-
-**Command:** `/reactionrole-remove <message_id> <emoji>`
-
-Unlink an emoji.
+### Unlink an Emoji
 
 ```
-/reactionrole-remove 987654321 🎮
+/reactionrole-remove 987654321 emoji:gear
 ```
 
 ---
 
 ## Custom Commands
 
-Define your own text commands without any coding.
+Define your own text commands without coding.
 
 ### Add a Custom Command
 
-**Command:** `/customcommand-add trigger <response>`
-
-Create a text command. When someone types `!trigger`, the bot replies with `<response>`.
-
 ```
-/customcommand-add rules Check #rules for our server guidelines!
-/customcommand-add hello Hey! Welcome to our server!
+/customcommand-add trigger:rules Check #rules for our guidelines!
+/customcommand-add trigger:hello Welcome to the server!
 ```
 
-Now, if someone types:
-```
-!rules
-```
-
-The bot replies:
-```
-Check #rules for our server guidelines!
-```
+Now if someone types `!rules`, the bot replies with your message.
 
 ### Remove a Custom Command
 
-**Command:** `/customcommand-remove trigger`
-
-Delete a custom command.
-
 ```
-/customcommand-remove rules
+/customcommand-remove trigger:rules
 ```
 
 ### List Custom Commands
-
-**Command:** `/customcommand-list`
-
-See all custom commands in your server.
 
 ```
 /customcommand-list
@@ -664,75 +440,44 @@ See all custom commands in your server.
 
 ## Reminders
 
-Set a reminder to be notified later.
-
-### Remind Me
-
-**Command:** `/remind <duration> <message>`
-
-Set a reminder. Duration format: `10m`, `2h`, `1d`, `1w`
+### Set a Reminder
 
 ```
-/remind 10m Check the oven
-/remind 2h Call the dentist
-/remind 1d Pay bills
+/remind duration:10m Check the oven
+/remind duration:2h Call the dentist
+/remind duration:1d Pay bills
 ```
 
-**What happens:**
-1. You get a DM when the reminder is due
-2. If DMs are closed, the bot posts in the channel where you set it
-3. The reminder is checked every 30 seconds
+Duration format: `10m`, `2h`, `1d`, `1w`. You get a DM when it's due (or the bot posts in the channel if your DMs are closed).
 
 ---
 
 ## Economy & Shop
 
-A server-wide currency system.
-
 ### Check Balance
-
-**Command:** `/balance [@user]`
-
-See how much currency you (or someone) have.
 
 ```
 /balance
 /balance @User1
 ```
 
-### Daily Reward
-
-**Command:** `/daily`
-
-Claim 200 coins once per day.
+### Claim Daily Reward
 
 ```
 /daily
 ```
 
-**Cooldown:** 24 hours
+Get 200 coins once per 24 hours.
 
 ### Work
-
-**Command:** `/work`
-
-Earn 50–150 coins with a random job message.
 
 ```
 /work
 ```
 
-**Messages vary:**
-- "You delivered packages and earned X coins."
-- "You busked in the town square and collected X coins."
-
-**Cooldown:** 1 hour
+Earn 50-150 coins. 1 hour cooldown.
 
 ### Send Money
-
-**Command:** `/pay @user <amount>`
-
-Pay another member coins.
 
 ```
 /pay @User1 100
@@ -740,19 +485,13 @@ Pay another member coins.
 
 ### Economy Leaderboard
 
-**Command:** `/economy-leaderboard`
-
-Top 10 richest members.
-
 ```
 /economy-leaderboard
 ```
 
-### View Shop
+Top 10 richest members.
 
-**Command:** `/shop`
-
-List all purchasable items (roles, rewards, etc.).
+### View the Shop
 
 ```
 /shop
@@ -760,69 +499,37 @@ List all purchasable items (roles, rewards, etc.).
 
 ### Buy an Item
 
-**Command:** `/buy <item_name>`
-
-Purchase an item from the shop.
-
 ```
-/buy Member
-/buy VIP
+/buy item_name:Member
+/buy item_name:VIP
 ```
 
-If the item is a role, you get it automatically.
-
-### Admin: Add Shop Item
-
-**Command:** `/shop-add item_name <price> [@role]`
-
-Add an item to the shop. Optionally link a role.
+### Add Item to Shop
 
 ```
-/shop-add Member 500           # 500 coins, no role reward
-/shop-add VIP 1000 @VIP        # 1000 coins, gives @VIP role
+/shop-add item_name:Member price:500
+/shop-add item_name:VIP price:1000 role:@VIP
 ```
 
-### Admin: Remove Shop Item
-
-**Command:** `/shop-remove item_name`
-
-Remove an item from the shop.
+### Remove Item from Shop
 
 ```
-/shop-remove Member
+/shop-remove item_name:Member
 ```
 
 ---
 
 ## Social Alerts
 
-Notifications when content creators upload or go live.
-
 ### YouTube Alerts
-
-**Command:** `/youtube-alert #channel <channel_id>`
-
-Get notified when a YouTube channel uploads.
-
-**To get YouTube channel ID:**
-1. Go to the channel's page
-2. In the URL, it's after `/channel/` — starts with `UC`
-3. Copy that ID
 
 ```
 /youtube-alert #streams UCddiUEpYJcSLOAekIKcyNAA
 ```
 
-**What happens:**
-- Bot polls YouTube's public RSS feed every 5 minutes
-- When a new video is found, posts an embed in #streams
-- No API key needed
+YouTube IDs start with UC and are 24 characters long. Bot checks every 5 minutes. No API key needed.
 
 ### Remove YouTube Alert
-
-**Command:** `/youtube-alert-remove <channel_id>`
-
-Stop alerts for a channel.
 
 ```
 /youtube-alert-remove UCddiUEpYJcSLOAekIKcyNAA
@@ -830,25 +537,13 @@ Stop alerts for a channel.
 
 ### Twitch Alerts
 
-**Command:** `/twitch-alert #channel <username>`
-
-Get notified when a streamer goes live.
-
 ```
 /twitch-alert #streams ninja
-/twitch-alert #streams pokimane
 ```
 
-**Setup required:**
-- Add `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` to `.env`
-- Free: Create an app at https://dev.twitch.tv/console
-- Bot checks every 3 minutes
+Requires TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET in your .env (free at dev.twitch.tv/console). Checks every 3 minutes.
 
 ### Remove Twitch Alert
-
-**Command:** `/twitch-alert-remove <username>`
-
-Stop alerts for a streamer.
 
 ```
 /twitch-alert-remove ninja
@@ -856,110 +551,366 @@ Stop alerts for a streamer.
 
 ---
 
-## Embeds & Messages
+## Permissions
 
-Send custom messages and embeds.
+Restrict commands to specific roles. The server owner and anyone with Administrator always bypass restrictions.
+
+### Restrict a Command
+
+```
+/permission-restrict command:ban role:@Moderator
+/permission-restrict command:ticket-close role:@Support
+```
+
+Now only those roles (plus owner/admins) can use that command.
+
+### Remove a Role from a Command
+
+```
+/permission-unrestrict command:ban role:@Moderator
+```
+
+### Remove All Restrictions from a Command
+
+```
+/permission-clear command:ban
+```
+
+### See What's Restricted
+
+```
+/permission-list
+/permission-list command:ban
+```
+
+### Add or Remove Roles (Dedicated Command)
+
+```
+/role add @User1 @VIP
+/role remove @User1 @VIP
+```
+
+---
+
+## Roblox Verification
+
+Link Discord members to their Roblox accounts.
+
+### Verify Your Account
+
+```
+/verify roblox_username:your_username
+```
+
+Bot looks it up and can auto-grant a Verified role.
+
+### Unverify Yourself
+
+```
+/unverify
+```
+
+Admins can also unverify others:
+```
+/unverify member:@User1
+```
+
+### Look Up Someone's Account
+
+```
+/whois
+/whois member:@User1
+```
+
+Shows their linked Roblox username, ID, and when they verified.
+
+### Set the Verified Role
+
+```
+/verified-role role:@Verified
+```
+
+Auto-grant this role when someone verifies.
+
+---
+
+## Awards & Leave of Absence
+
+### Give Someone an Award
+
+```
+/award member:@User1 title:Outstanding_Contribution reason:Helped many new members this week
+```
+
+They get a DM, it can post to an announcements channel, and it shows in their history.
+
+### View Someone's Awards
+
+```
+/awards
+/awards member:@User1
+```
+
+### Request Time Off
+
+```
+/loa-request start_date:2026-09-01 end_date:2026-09-10 reason:Going on vacation
+```
+
+Staff gets a notification with Approve/Deny buttons.
+
+### See Who's On Leave
+
+```
+/loa-list
+```
+
+Shows all currently approved leaves.
+
+### Set Awards Channel
+
+```
+/awards-channel #announcements
+```
+
+### Set LOA Review Channel
+
+```
+/loa-channel #loa-requests
+```
+
+Where staff approve or deny requests.
+
+---
+
+## Rank Hierarchy & Divisions
+
+Build a ranked ladder and organize members into units.
+
+### Add Ranks
+
+```
+/rank-add rank_name:Private role:@Private order:1
+/rank-add rank_name:Corporal role:@Corporal order:2
+/rank-add rank_name:Sergeant role:@Sergeant order:3
+```
+
+Order determines the ladder (higher = higher rank). Each rank is tied to a role.
+
+### See All Ranks
+
+```
+/rank-list
+```
+
+### Promote Someone
+
+```
+/promote member:@User1
+```
+
+Moves them up one rank.
+
+### Demote Someone
+
+```
+/demote member:@User1
+```
+
+Moves them down one rank.
+
+### Set Specific Rank
+
+```
+/setrank member:@User1 rank_name:Sergeant
+```
+
+Jump straight to that rank.
+
+### Remove a Rank
+
+```
+/rank-remove rank_name:Private
+```
+
+### Add Divisions
+
+```
+/division-add division_name:Alpha role:@Alpha_Squad
+/division-add division_name:Bravo role:@Bravo_Squad
+```
+
+Divisions are flat (no hierarchy). Use them for squads or teams.
+
+### See Divisions
+
+```
+/division-list
+```
+
+### Transfer Someone
+
+```
+/transfer member:@User1 division_name:Bravo
+```
+
+Removes them from their current division, adds them to the new one.
+
+---
+
+## Discharge & Desertions
+
+Remove members from rank/division and track departures.
+
+### Discharge a Member
+
+```
+/discharge member:@User1 reason:Inactive for 30 days
+/discharge member:@User1 reason:Violated server rules kick:true
+```
+
+Strips all rank and division roles. The `kick` option also removes them from the server. They get a DM explaining why.
+
+### View Discharge History
+
+```
+/discharges member:@User1
+```
+
+### Automatic Desertion Detection
+
+If someone with a rank or division role leaves the server on their own, it's automatically logged as a desertion. No command needed.
+
+### See Recent Desertions
+
+```
+/desertions
+```
+
+Members who left while ranked.
+
+### Set Discharge Log Channel
+
+```
+/discharge-channel #discharge-logs
+```
+
+---
+
+## Background Checks
+
+### Run a Background Check
+
+```
+/backgroundcheck member:@User1
+```
+
+Shows their join date, account age, current rank/division, Roblox link, warning count, award count, and discharge history. Useful before promoting someone.
+
+---
+
+## Events
+
+Schedule activities and track RSVPs.
+
+### Create an Event
+
+```
+/event-create name:Server_Tournament description:1v1 bracket when:Next Saturday 8PM EST channel:#events
+```
+
+Posts an announcement with three RSVP buttons: Attending, Maybe, Can't Make It.
+
+### See Upcoming Events
+
+```
+/event-list
+```
+
+### Check Attendance
+
+```
+/event-attendance event_id:1
+```
+
+Shows breakdown of Attending/Maybe/Declined.
+
+---
+
+## Audit Log
+
+Track every command used in your server.
+
+### Set Audit Log Channel
+
+```
+/auditlog-channel #audit-logs
+```
+
+Every command gets logged there in real-time.
+
+### Check Recent Commands
+
+```
+/auditlog
+```
+
+Shows the 15 most recent commands and who ran them.
+
+---
+
+## Embeds & Messages
 
 ### Build a Custom Embed
 
-**Command:** `/embed [#channel]`
-
-Opens a form where you fill in:
-- **Title** (visible)
-- **Description** (main text)
-- **Color** (hex code like `5865F2`, or blank for default)
-- **Footer** (small text at bottom, or uses "Made by Fritz" by default)
-- **Image URL** (optional banner image)
-
 ```
-/embed #announcements
+/embed channel:#announcements
 ```
 
-Then fill in the form:
-- Title: `New Feature!`
-- Description: `We just added /remind commands!`
-- Color: `57F287` (green)
-- Footer: `Announced today`
-- Image: https://example.com/image.png
+Opens a form where you fill in title, description, color (hex like 5865F2), footer, and an optional image URL.
 
 ### Send Plain Text
 
-**Command:** `/say <message> [#channel]`
-
-Make the bot say something.
-
 ```
-/say Hello everyone!
-/say #announcements Big update coming soon!
+/say message:Hello everyone!
+/say message:Update coming soon! channel:#announcements
 ```
 
 ---
 
 ## Utility & Info
 
-General commands.
-
-### Ping
-
-**Command:** `/ping`
-
-Check the bot's latency.
+### Check Bot Latency
 
 ```
 /ping
 ```
 
-**Output:** Latency in milliseconds
-
 ### Server Info
-
-**Command:** `/serverinfo`
-
-See stats about your server.
 
 ```
 /serverinfo
 ```
 
-**Shows:**
-- Owner
-- Member count
-- Text/voice channels
-- Roles
-- Creation date
+Shows owner, member count, channels, roles, creation date.
 
-### User Info
-
-**Command:** `/userinfo [@user]`
-
-See info about a member.
+### Member Info
 
 ```
 /userinfo
-/userinfo @User1
+/userinfo member:@User1
 ```
 
-**Shows:**
-- Join date
-- Account creation date
-- All roles
+Shows join date, account creation date, and roles.
 
-### Avatar
-
-**Command:** `/avatar [@user]`
-
-Get a member's profile picture.
+### Get Avatar
 
 ```
 /avatar
-/avatar @User1
+/avatar member:@User1
 ```
 
 ### Credits
-
-**Command:** `/credits`
-
-See who made this bot.
 
 ```
 /credits
@@ -967,71 +918,56 @@ See who made this bot.
 
 ### Help
 
-**Command:** `/help`
-
-Full list of all commands.
-
 ```
 /help
 ```
 
+Lists all commands by category.
+
 ---
 
-## Database & Data Persistence
+## Database
 
-All data (XP, economy, warnings, tickets, etc.) is stored in `bot_data.db` — a local SQLite database.
-
-- **Saved automatically** after every command
-- **Survives restarts** — data persists when bot goes offline
-- **Per-server** — each server has separate XP, economy, config
-
-**Backup:** Just copy `bot_data.db` somewhere safe.
+Everything is stored in `bot_data.db`, a local SQLite database. It survives bot restarts and keeps data per-server. To back up, just copy `bot_data.db`.
 
 ---
 
 ## Troubleshooting
 
-### Commands don't appear
+**Commands don't show up**: Enable Server Members and Message Content intents in the Developer Portal. Restart the bot. Wait up to an hour.
 
-1. Make sure intents are enabled in the Developer Portal (Server Members + Message Content)
-2. Restart the bot: `python main.py`
-3. Wait up to an hour for global sync (usually 5–10 min)
+**Bot can't see messages**: Enable Message Content Intent and restart.
 
-### Bot can't see messages
+**XP not working**: Members need to send real messages, not commands. There's a 60-second cooldown per person.
 
-- Enable **Message Content Intent** in Developer Portal
-- Restart the bot
+**Tickets won't create**: Run `/ticket-setup` first with a valid category. Bot needs permission to create channels.
 
-### XP not working
-
-- Members must send real messages (not commands)
-- XP has a 60-second cooldown per user
-
-### Tickets not creating channels
-
-- Make sure you ran `/ticket-setup category:<category> log_channel:<channel>`
-- The category must exist in Discord
-- Bot must have permission to create channels
-
-### YouTube/Twitch alerts not firing
-
-- YouTube: Double-check the channel ID (must start with `UC`)
-- Twitch: Make sure `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` are in `.env`
+**YouTube/Twitch alerts not firing**: Double-check the YouTube ID (must start with UC). For Twitch, verify your credentials in .env.
 
 ---
 
-## Credit & License
+## Tips
 
-**Made by Fritz**
+Set up `/setmodlog` first so all moderation gets recorded.
 
-MIT License — you can modify and redistribute, but keep the attribution.
+Use reaction roles to let members self-assign roles.
 
-```
-Copyright (c) 2026 Fritz
-```
+Custom commands save time for FAQs you mention constantly.
+
+Level-up roles make leveling feel rewarding - people chat more.
+
+Economy is more fun with a shop - let people spend coins on perks.
+
+Awards recognize people publicly and boost morale.
+
+Background checks before promoting someone prevent mistakes.
+
+Rank promotion is cleaner than manual role management.
+
+Event RSVPs help you plan around actual attendance.
+
+Audit logging catches rule-breakers and shows who changed what.
 
 ---
 
-**Questions or issues?** Check the codebase or ask in our Discord server!
-
-https://discord.gg/MxETdBJAHd
+Made by Fritz. MIT License. Attribution required.
