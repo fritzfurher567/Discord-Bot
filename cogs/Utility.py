@@ -138,6 +138,15 @@ class Utility(commands.Cog):
             value="`/ping` `/serverinfo` `/userinfo` `/avatar` `/credits` `/help`",
             inline=False
         )
+        
+         )
+        embed.add_field(
+            name="Need More Help??",
+            value="Visit The nil Website For More Support"
+            incline=False
+    )
+                  
+            inline=False
         await interaction.response.send_message(embed=embed)
 
 
