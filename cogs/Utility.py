@@ -139,7 +139,7 @@ class Utility(commands.Cog):
             inline=False
         )
         
-         )
+         
         embed.add_field(
             name="Need More Help??",
             value="Visit The nil Website For More Support"
